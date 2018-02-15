@@ -1,75 +1,87 @@
 package fitnesse.wikitext.widgets;
 
-import fitnesse.wikitext.parser.Parser;
-import fitnesse.wikitext.parser.Symbol;
-import fitnesse.wikitext.parser.SymbolType;
-
-import org.junit.Before;
-import org.junit.Test;
-import util.Maybe;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import org.junit.Before;
+import org.junit.Test;
 
-public class MavenClasspathSymbolTypeTest {
+import fitnesse.wikitext.parser.Maybe;
+import fitnesse.wikitext.parser.Parser;
+import fitnesse.wikitext.parser.Symbol;
+import fitnesse.wikitext.parser.SymbolType;
 
-    private MavenClasspathSymbolType mavenClasspathSymbolType;
-    private MavenClasspathExtractor mavenClasspathExtractor;
-    private Symbol symbol;
-    private Parser parser;
+public class MavenClasspathSymbolTypeTest
+{
 
-    @Before
-    public void setUp() throws Exception {
-        symbol = mock(Symbol.class);
-        parser = mock(Parser.class);
-        mavenClasspathExtractor = mock(MavenClasspathExtractor.class);
+   private MavenClasspathSymbolType mavenClasspathSymbolType;
+   private MavenClasspathExtractor mavenClasspathExtractor;
+   private Symbol symbol;
+   private Parser parser;
 
-        mavenClasspathSymbolType = new MavenClasspathSymbolType();
-        mavenClasspathSymbolType.setMavenClasspathExtractor(mavenClasspathExtractor);
-    }
+   @Before
+   public void setUp() throws Exception
+   {
+      symbol = mock(Symbol.class);
+      parser = mock(Parser.class);
+      mavenClasspathExtractor = mock(MavenClasspathExtractor.class);
 
-    @Test
-    public void canParseAProperDirective() {
-        when(parser.moveNext(1))
-                .thenReturn(new Symbol(SymbolType.Whitespace))
-                .thenReturn(new Symbol(SymbolType.Text, "thePomFile"));
+      mavenClasspathSymbolType = new MavenClasspathSymbolType();
+      mavenClasspathSymbolType.setMavenClasspathExtractor(mavenClasspathExtractor);
+   }
 
-        Maybe<Symbol> result = mavenClasspathSymbolType.parse(symbol, parser);
-        assertNotNull(result);
-        assertNotSame(Symbol.nothing, result);
+   @Test
+   public void canParseAProperDirective()
+   {
+      when(parser.moveNext(1)).thenReturn(new Symbol(SymbolType.Whitespace))
+            .thenReturn(new Symbol(SymbolType.Text, "thePomFile"));
 
-        verify(symbol).add("thePomFile");
-    }
+      Maybe<Symbol> result = mavenClasspathSymbolType.parse(symbol, parser);
+      assertNotNull(result);
+      assertNotSame(Symbol.nothing, result);
 
-    @Test
-    public void translatesToClasspathEntries() {
-        Symbol child = mock(Symbol.class);
+      verify(symbol).add("thePomFile");
+   }
 
-        when(symbol.childAt(0)).thenReturn(child);
-        when(child.getContent()).thenReturn("thePomFile");
+   @Test
+   public void translatesToClasspathEntries()
+   {
+      Symbol child = mock(Symbol.class);
 
-        when(mavenClasspathExtractor.extractClasspathEntries(any(File.class), isA(String.class)))
-                .thenReturn(Arrays.asList("test1", "test2"));
+      when(symbol.childAt(0)).thenReturn(child);
+      when(child.getContent()).thenReturn("thePomFile");
 
-        assertEquals("<span class=\"meta\">classpath: test1</span><br/><span class=\"meta\">classpath: test2</span><br/>"
-                , mavenClasspathSymbolType.toTarget(null, symbol));
-    }
+      when(mavenClasspathExtractor.extractClasspathEntries(any(File.class), isA(String.class)))
+            .thenReturn(Arrays.asList("test1", "test2"));
 
-    @Test
-    public void translatesToJavaClasspath() {
-        Symbol child = mock(Symbol.class);
+      assertEquals("<span class=\"meta\">classpath: test1</span><br/><span class=\"meta\">classpath: test2</span><br/>",
+            mavenClasspathSymbolType.toTarget(null, symbol));
+   }
 
-        when(symbol.childAt(0)).thenReturn(child);
-        when(child.getContent()).thenReturn("thePomFile");
+   @Test
+   public void translatesToJavaClasspath()
+   {
+      Symbol child = mock(Symbol.class);
 
-        when(mavenClasspathExtractor.extractClasspathEntries(any(File.class), isA(String.class)))
-                .thenReturn(Arrays.asList("test1", "test2"));
+      when(symbol.childAt(0)).thenReturn(child);
+      when(child.getContent()).thenReturn("thePomFile");
 
-        assertArrayEquals(new Object[] { "test1", "test2" }, mavenClasspathSymbolType.providePaths(null, symbol).toArray());
-    }
+      when(mavenClasspathExtractor.extractClasspathEntries(any(File.class), isA(String.class)))
+            .thenReturn(Arrays.asList("test1", "test2"));
+
+      assertArrayEquals(new Object[] { "test1", "test2" },
+            mavenClasspathSymbolType.providePaths(null, symbol).toArray());
+   }
 
 
 }
