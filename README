@@ -1,6 +1,6 @@
+I forked this to allow the maven classpath plugin to continue working with later versions of Fitnesse.
 
-#THIS PROJECT IS NOT MAINTAINED ANYMORE. FEEL FREE TO CLONE.
-
+Tested with fitnesse v20180127.
 
 1. Introduction.
 
